@@ -1071,10 +1071,10 @@ KeyframeEditFunc ANIM_editkeyframes_mirror(short mode)
  */
 #define ENSURE_HANDLES_MATCH(bezt) \
   if (bezt->h1 != bezt->h2) { \
-    if (ELEM(bezt->h1, HD_ALIGN, HD_AUTO, HD_AUTO_ANIM)) { \
+    if (ELEM(bezt->h1, HD_ALIGN, HD_AUTO, HD_AUTO_ANIM, HD_LINEAR_X)) { \
       bezt->h1 = HD_FREE; \
     } \
-    if (ELEM(bezt->h2, HD_ALIGN, HD_AUTO, HD_AUTO_ANIM)) { \
+    if (ELEM(bezt->h2, HD_ALIGN, HD_AUTO, HD_AUTO_ANIM, HD_LINEAR_X)) { \
       bezt->h2 = HD_FREE; \
     } \
   } \
@@ -1179,6 +1179,25 @@ static short set_bezier_align(KeyframeEditData * /*ked*/, BezTriple *bezt)
   return 0;
 }
 
+/* Sets selected bezier handles to type 'linear x'. */
+static short set_bezier_linear_x(KeyframeEditData * /*ked*/, BezTriple *bezt)
+{
+  /* If the key is selected, always apply to both handles. */
+  if (bezt->f2 & SELECT) {
+    bezt->h1 = bezt->h2 = HD_LINEAR_X;
+  }
+  else {
+    if (bezt->f1 & SELECT) {
+      bezt->h1 = HD_LINEAR_X;
+    }
+    if (bezt->f3 & SELECT) {
+      bezt->h2 = HD_LINEAR_X;
+    }
+  }
+
+  return 0;
+}
+
 /* Sets selected bezier handles to type 'free'. */
 static short set_bezier_free(KeyframeEditData * /*ked*/, BezTriple *bezt)
 {
@@ -1212,6 +1231,8 @@ KeyframeEditFunc ANIM_editkeyframes_handles(short mode)
       return set_bezier_free;
     case HD_ALIGN: /* align */
       return set_bezier_align;
+    case HD_LINEAR_X: /* linear x */
+      return set_bezier_linear_x;
 
     default: /* check for toggle free or align? */
       return bezier_isfree;
