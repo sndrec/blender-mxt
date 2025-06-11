@@ -1168,6 +1168,50 @@ static BezTriple *cycle_offset_triple(
   return out;
 }
 
+/* Ensure LINEAR_X handles have a fixed horizontal distance of one third
+ * of the interval to the adjacent keyframes while keeping the handle
+ * direction. */
+static void linearize_fcurve_handles(FCurve *fcu)
+{
+  if (fcu->totvert < 2) {
+    return;
+  }
+
+  for (int i = 0; i < fcu->totvert; i++) {
+    BezTriple *bezt = &fcu->bezt[i];
+
+    if (i > 0 && bezt->h1 == HD_LINEAR_X) {
+      BezTriple *prev = &fcu->bezt[i - 1];
+      float target_dx = (bezt->vec[1][0] - prev->vec[1][0]) / -3.0f;
+      float vec_x = bezt->vec[0][0] - bezt->vec[1][0];
+      float vec_y = bezt->vec[0][1] - bezt->vec[1][1];
+      if (fabsf(vec_x) > 1e-6f) {
+        float scale = target_dx / vec_x;
+        bezt->vec[0][0] = bezt->vec[1][0] + vec_x * scale;
+        bezt->vec[0][1] = bezt->vec[1][1] + vec_y * scale;
+      }
+      else {
+        bezt->vec[0][0] = bezt->vec[1][0] + target_dx;
+      }
+    }
+
+    if (i < fcu->totvert - 1 && bezt->h2 == HD_LINEAR_X) {
+      BezTriple *next = &fcu->bezt[i + 1];
+      float target_dx = (next->vec[1][0] - bezt->vec[1][0]) / 3.0f;
+      float vec_x = bezt->vec[2][0] - bezt->vec[1][0];
+      float vec_y = bezt->vec[2][1] - bezt->vec[1][1];
+      if (fabsf(vec_x) > 1e-6f) {
+        float scale = target_dx / vec_x;
+        bezt->vec[2][0] = bezt->vec[1][0] + vec_x * scale;
+        bezt->vec[2][1] = bezt->vec[1][1] + vec_y * scale;
+      }
+      else {
+        bezt->vec[2][0] = bezt->vec[1][0] + target_dx;
+      }
+    }
+  }
+}
+
 void BKE_fcurve_handles_recalc_ex(FCurve *fcu, eBezTriple_Flag handle_sel_flag)
 {
   using namespace blender;
@@ -1246,6 +1290,8 @@ void BKE_fcurve_handles_recalc_ex(FCurve *fcu, eBezTriple_Flag handle_sel_flag)
   if (fcu->auto_smoothing != FCURVE_SMOOTH_NONE) {
     BKE_nurb_handle_smooth_fcurve(fcu->bezt, fcu->totvert, cycle);
   }
+
+  linearize_fcurve_handles(fcu);
 }
 
 void BKE_fcurve_handles_recalc(FCurve *fcu)

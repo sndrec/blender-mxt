@@ -1302,7 +1302,7 @@ static void mask_calc_point_handle(MaskSplinePoint *point,
   else if (handle_type == HD_AUTO) {
     BKE_nurb_handle_calc(bezt, bezt_prev, bezt_next, 0, 0);
   }
-  else if (ELEM(handle_type, HD_ALIGN, HD_ALIGN_DOUBLESIDE)) {
+  else if (ELEM(handle_type, HD_ALIGN, HD_ALIGN_DOUBLESIDE, HD_LINEAR_X)) {
     float v1[3], v2[3];
     float vec[3], h[3];
 

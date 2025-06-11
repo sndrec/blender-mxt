@@ -472,6 +472,7 @@ typedef enum eBezTriple_Handle {
   HD_ALIGN = 3,
   HD_AUTO_ANIM = 4,        /* auto-clamped handles for animation */
   HD_ALIGN_DOUBLESIDE = 5, /* align handles, displayed both of them. used for masks */
+  HD_LINEAR_X = 6,         /* aligned handle with linear X progression */
 } eBezTriple_Handle;
 
 /* auto_handle_type (beztriple) */
