@@ -956,6 +956,10 @@ static void outliner_object_delete_fn(bContext *C, ReportList *reports, Scene *s
 {
   if (ob) {
     Main *bmain = CTX_data_main(C);
+    if (!ob->can_user_delete) {
+      BKE_report(reports, RPT_WARNING, "Object cannot be deleted");
+      return;
+    }
     if (ob->id.tag & ID_TAG_INDIRECT) {
       BKE_reportf(
           reports, RPT_WARNING, "Cannot delete indirectly linked object '%s'", ob->id.name + 2);
@@ -2341,6 +2345,11 @@ static void outliner_batch_delete_object_tag(ReportList *reports,
                                              Scene *scene,
                                              Object *object)
 {
+  if (!object->can_user_delete) {
+    BKE_report(reports, RPT_WARNING, "Object cannot be deleted");
+    BLI_assert((object->id.tag & ID_TAG_DOIT) == 0);
+    return;
+  }
   if (object->id.tag & ID_TAG_INDIRECT) {
     BKE_reportf(
         reports, RPT_WARNING, "Cannot delete indirectly linked object '%s'", object->id.name + 2);
@@ -2600,6 +2609,7 @@ struct ObjectEditData {
   Set<Object *> objects_set;
   bool is_liboverride_allowed;
   bool is_liboverride_hierarchy_root_allowed;
+  ReportList *reports;
 };
 
 static void outliner_do_object_delete(bContext *C,
@@ -2656,7 +2666,13 @@ static TreeTraversalAction outliner_collect_objects_to_delete(TreeElement *te, v
     }
   }
 
-  data->objects_set.add(reinterpret_cast<Object *>(id));
+  Object *ob = reinterpret_cast<Object *>(id);
+  if (!ob->can_user_delete) {
+    BKE_report(data->reports, RPT_WARNING, "Object cannot be deleted");
+    return TRAVERSE_SKIP_CHILDS;
+  }
+
+  data->objects_set.add(ob);
 
   return TRAVERSE_CONTINUE;
 }
@@ -2678,6 +2694,7 @@ static int outliner_delete_exec(bContext *C, wmOperator *op)
   ObjectEditData object_delete_data = {};
   object_delete_data.is_liboverride_allowed = false;
   object_delete_data.is_liboverride_hierarchy_root_allowed = delete_hierarchy;
+  object_delete_data.reports = op->reports;
   outliner_tree_traverse(space_outliner,
                          &space_outliner->tree,
                          0,

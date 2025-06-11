@@ -2199,6 +2199,10 @@ static int object_delete_exec(bContext *C, wmOperator *op)
   BKE_main_id_tag_all(bmain, ID_TAG_DOIT, false);
 
   CTX_DATA_BEGIN (C, Object *, ob, selected_objects) {
+    if (!ob->can_user_delete) {
+      BKE_report(op->reports, RPT_WARNING, "Object cannot be deleted");
+      continue;
+    }
     if (ob->id.tag & ID_TAG_INDIRECT) {
       /* Can this case ever happen? */
       BKE_reportf(op->reports,
