@@ -714,6 +714,7 @@ static void rna_def_maskSplinePoint(BlenderRNA *brna)
       {HD_AUTO, "AUTO", 0, "Auto", ""},
       {HD_VECT, "VECTOR", 0, "Vector", ""},
       {HD_ALIGN, "ALIGNED", 0, "Aligned Single", ""},
+      {HD_LINEAR_X, "LINEAR_X", 0, "Linear X", "Aligned handle with linear X progression"},
       {HD_ALIGN_DOUBLESIDE, "ALIGNED_DOUBLESIDE", 0, "Aligned", ""},
       {HD_FREE, "FREE", 0, "Free", ""},
       {0, nullptr, 0, nullptr, nullptr},

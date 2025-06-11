@@ -46,6 +46,8 @@ static HandleType handle_type_from_legacy(const uint8_t handle_type_legacy)
       return BEZIER_HANDLE_AUTO;
     case HD_ALIGN_DOUBLESIDE:
       return BEZIER_HANDLE_ALIGN;
+    case HD_LINEAR_X:
+      return BEZIER_HANDLE_ALIGN;
   }
   BLI_assert_unreachable();
   return BEZIER_HANDLE_AUTO;

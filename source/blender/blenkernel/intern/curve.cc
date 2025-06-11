@@ -3059,7 +3059,7 @@ static void calchandleNurb_intern(BezTriple *bezt,
                                   char fcurve_smoothing)
 {
   /* defines to avoid confusion */
-#define p2_h1 ((p2)-3)
+#define p2_h1 ((p2) - 3)
 #define p2_h2 ((p2) + 3)
 
   const float *p1, *p3;
@@ -3229,7 +3229,8 @@ static void calchandleNurb_intern(BezTriple *bezt,
       /* When one handle is free, aligning makes no sense, see: #35952 */
       ELEM(HD_FREE, bezt->h1, bezt->h2) ||
       /* Also when no handles are aligned, skip this step. */
-      (!ELEM(HD_ALIGN, bezt->h1, bezt->h2) && !ELEM(HD_ALIGN_DOUBLESIDE, bezt->h1, bezt->h2)))
+      (!ELEM(HD_ALIGN, bezt->h1, bezt->h2, HD_LINEAR_X) &&
+       !ELEM(HD_ALIGN_DOUBLESIDE, bezt->h1, bezt->h2)))
   {
     /* Handles need to be updated during animation and applying stuff like hooks,
      * but in such situations it's quite difficult to distinguish in which order
@@ -3249,8 +3250,8 @@ static void calchandleNurb_intern(BezTriple *bezt,
 
   const float len_ratio = len_a / len_b;
 
-  if (bezt->f1 & handle_sel_flag) {                      /* order of calculation */
-    if (ELEM(bezt->h2, HD_ALIGN, HD_ALIGN_DOUBLESIDE)) { /* aligned */
+  if (bezt->f1 & handle_sel_flag) {                                   /* order of calculation */
+    if (ELEM(bezt->h2, HD_ALIGN, HD_ALIGN_DOUBLESIDE, HD_LINEAR_X)) { /* aligned */
       if (len_a > eps) {
         len = 1.0f / len_ratio;
         p2_h2[0] = p2[0] + len * (p2[0] - p2_h1[0]);
@@ -3258,7 +3259,7 @@ static void calchandleNurb_intern(BezTriple *bezt,
         p2_h2[2] = p2[2] + len * (p2[2] - p2_h1[2]);
       }
     }
-    if (ELEM(bezt->h1, HD_ALIGN, HD_ALIGN_DOUBLESIDE)) {
+    if (ELEM(bezt->h1, HD_ALIGN, HD_ALIGN_DOUBLESIDE, HD_LINEAR_X)) {
       if (len_b > eps) {
         len = len_ratio;
         p2_h1[0] = p2[0] + len * (p2[0] - p2_h2[0]);
@@ -3268,7 +3269,7 @@ static void calchandleNurb_intern(BezTriple *bezt,
     }
   }
   else {
-    if (ELEM(bezt->h1, HD_ALIGN, HD_ALIGN_DOUBLESIDE)) {
+    if (ELEM(bezt->h1, HD_ALIGN, HD_ALIGN_DOUBLESIDE, HD_LINEAR_X)) {
       if (len_b > eps) {
         len = len_ratio;
         p2_h1[0] = p2[0] + len * (p2[0] - p2_h2[0]);
@@ -3276,7 +3277,7 @@ static void calchandleNurb_intern(BezTriple *bezt,
         p2_h1[2] = p2[2] + len * (p2[2] - p2_h2[2]);
       }
     }
-    if (ELEM(bezt->h2, HD_ALIGN, HD_ALIGN_DOUBLESIDE)) { /* aligned */
+    if (ELEM(bezt->h2, HD_ALIGN, HD_ALIGN_DOUBLESIDE, HD_LINEAR_X)) { /* aligned */
       if (len_a > eps) {
         len = 1.0f / len_ratio;
         p2_h2[0] = p2[0] + len * (p2[0] - p2_h1[0]);
@@ -3652,7 +3653,7 @@ static void bezier_output_handle_inner(BezTriple *bezt,
   copy_v3_v3(bezt->vec[idx], newval);
 
   /* fix up the Align handle if any */
-  if (ELEM(hm, HD_ALIGN, HD_ALIGN_DOUBLESIDE)) {
+  if (ELEM(hm, HD_ALIGN, HD_ALIGN_DOUBLESIDE, HD_LINEAR_X)) {
     float hlen = len_v3v3(bezt->vec[1], bezt->vec[2 - idx]);
     float h2len = len_v3v3(bezt->vec[1], bezt->vec[idx]);
 
@@ -4548,7 +4549,7 @@ void BKE_curve_nurbs_vert_coords_get(const ListBase *lb, float (*vert_coords)[3]
 float (*BKE_curve_nurbs_vert_coords_alloc(const ListBase *lb, int *r_vert_len))[3]
 {
   const int vert_len = BKE_nurbList_verts_count(lb);
-  float(*vert_coords)[3] = (float(*)[3])MEM_malloc_arrayN(
+  float (*vert_coords)[3] = (float (*)[3])MEM_malloc_arrayN(
       vert_len, sizeof(*vert_coords), __func__);
   BKE_curve_nurbs_vert_coords_get(lb, vert_coords, vert_len);
   *r_vert_len = vert_len;
@@ -4631,7 +4632,7 @@ void BKE_curve_nurbs_vert_coords_apply(ListBase *lb,
 float (*BKE_curve_nurbs_key_vert_coords_alloc(const ListBase *lb, float *key, int *r_vert_len))[3]
 {
   int vert_len = BKE_nurbList_verts_count(lb);
-  float(*cos)[3] = (float(*)[3])MEM_malloc_arrayN(vert_len, sizeof(*cos), __func__);
+  float (*cos)[3] = (float (*)[3])MEM_malloc_arrayN(vert_len, sizeof(*cos), __func__);
 
   float *co = cos[0];
   LISTBASE_FOREACH (const Nurb *, nu, lb) {
