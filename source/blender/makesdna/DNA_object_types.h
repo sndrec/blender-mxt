@@ -382,7 +382,8 @@ typedef struct Object {
 
   /** ObjectModifierFlag */
   uint8_t modifier_flag;
-  char _pad8[4];
+  char can_user_delete;
+  char _pad8[3];
 
   struct PreviewImage *preview;
 
